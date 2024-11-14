@@ -1,8 +1,8 @@
 # 🤖Pumpfun Volume Bot
 
-This bot allows you to increase the volume of spl tokens on Pumpfun.
+This bot allows you to increase the volume and number of makers of spl tokens on Pumpfun.
 <br />
-Bot distributes SOL to multiple wallets and use the distributed wallets to buy and sell permanently on the Raydium platform.
+Bot distributes SOL to multiple wallets and use the distributed wallets to buy and sell permanently on the Pumpfun platform.
 
 ## 💬Contact Me
 
@@ -19,8 +19,8 @@ Twitter: [@whistle](https://x.com/lucky_whistle)
 1. Clone the repository
 
     ```
-    git clone https://github.com/whistledev411/pumpfun-volume-bot-beta.git
-    cd raydium-volume-bot
+    git clone https://github.com/whistledev411/pumpfun-maker-volume-bot-beta.git
+    cd pumpfun-maker-volume-bot-beta
     ```
 2. Install dependencies
 

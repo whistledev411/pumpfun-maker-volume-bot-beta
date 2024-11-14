@@ -34,14 +34,14 @@ import {
 } from './constants'
 import { Data, readJson, saveDataToFile, sleep } from './utils'
 import base58 from 'bs58'
-import { getBuyTxWithJupiter, getSellTxWithJupiter } from './utils/swapOnlyAmm'
+import { getSellTxWithJupiter } from './utils/swapOnlyAmm'
 import { execute } from './executor/legacy'
 import { executeJitoTx } from './executor/jito'
 import BN from 'bn.js'
 import { bool, struct, u64 } from '@raydium-io/raydium-sdk'
+import { formatDate } from './utils/commonFunc'
 
 const computeUnit = 100000;
-
 
 const TRADE_PROGRAM_ID = new PublicKey('6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P');
 const BONDING_ADDR_SEED = new Uint8Array([98, 111, 110, 100, 105, 110, 103, 45, 99, 117, 114, 118, 101]);
@@ -62,20 +62,12 @@ export const solanaConnection = new Connection(RPC_ENDPOINT, {
   wsEndpoint: RPC_WEBSOCKET_ENDPOINT, commitment: "confirmed"
 })
 
-export const mainKp = Keypair.fromSecretKey(base58.decode(PRIVATE_KEY))
+const mainKp = Keypair.fromSecretKey(base58.decode(PRIVATE_KEY))
 const baseMint = new PublicKey(TOKEN_MINT)
 const distritbutionNum = DISTRIBUTE_WALLET_NUM > 20 ? 20 : DISTRIBUTE_WALLET_NUM
 const jitoCommitment: Commitment = "confirmed"
 
 export const BONDING_CURV = struct([
-  // u64('initialized'),
-  // publicKey('authority'),
-  // publicKey('feeRecipient'),
-  // u64('initialVirtualTokenReserves'),
-  // u64('initialVirtualSolReserves'),
-  // u64('initialRealTokenReserves'),
-  // u64('tokenTotalSupply'),
-  // u64('feeBasisPoints'),
   u64('virtualTokenReserves'),
   u64('virtualSolReserves'),
   u64('realTokenReserves'),
@@ -84,7 +76,7 @@ export const BONDING_CURV = struct([
   bool('complete'),
 ])
 
-const main = async () => {
+const main = async (mainKp: Keypair, baseMint: PublicKey, distritbutionNum: number, ) => {
 
   const solBalance = await solanaConnection.getBalance(mainKp.publicKey)
   console.log(`Volume bot is running`)
@@ -309,7 +301,7 @@ const distributeSol = async (connection: Connection, mainKp: Keypair, distritbut
         }
         if (txSig) {
           const distibuteTx = txSig ? `https://solscan.io/tx/${txSig}` : ''
-          console.log("SOL distributed ", distibuteTx)
+          console.log("SOL distributed ", distibuteTx, await formatDate())
           break
         }
         index++
@@ -332,6 +324,7 @@ const distributeSol = async (connection: Connection, mainKp: Keypair, distritbut
     console.log("Success in distribution")
     return wallets
   } catch (error) {
+    console.log("🚀 ~ distributeSol ~ error:", error)
     console.log(`Failed to transfer SOL`)
     return null
   }
@@ -363,7 +356,7 @@ const sell = async (baseMint: PublicKey, wallet: Keypair) => {
       // console.log(await solanaConnection.simulateTransaction(sellTx))
       let txSig
       if (JITO_MODE) {
-        txSig = await executeJitoTx([sellTx], mainKp, jitoCommitment)
+        txSig = await executeJitoTx([sellTx], wallet, jitoCommitment)
       } else {
         const latestBlockhash = await solanaConnection.getLatestBlockhash()
         txSig = await execute(sellTx, latestBlockhash, 1)
@@ -516,4 +509,4 @@ export const buy = async (
   }
 };
 
-main()
+main(mainKp, baseMint, 2)
